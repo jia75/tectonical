@@ -32,7 +32,7 @@ char density[10] =  {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
 void renderMap(Map *map) {
     for (int i = 0; i < map->height; ++i) {
         for (int j = 0; j < map->width; ++j) {
-            fprintf(stdout, "%c", density[(int)(map->map[i][j] > 9 ? 9 :
+            fprintf(stdout, "%c ", density[(int)(map->map[i][j] > 9 ? 9 :
                     map->map[i][j])]);
         }
         fprintf(stdout, "\n");
@@ -47,9 +47,16 @@ void renderToPpm(Map *map) {
             int val = (int)(map->map[i][j] > 9 ? 9 : map->map[i][j]);
             fprintf(out, "%d %d %d\n", val, val, val);
         }
-        fprintf(stdout, "\n");
     }
     fclose(out);
+}
+
+void clearMap(Map *map) {
+    for (int i = 0; i < map->height; ++i) {
+        for (int j = 0; j < map->width; ++j) {
+            map->map[i][j] = 0;
+        }
+    }
 }
 
 void showMapValues(Map *map) {
@@ -61,13 +68,16 @@ void showMapValues(Map *map) {
     }
 }
 
-/* factor -> proportion of a cell's value that will get diffused */
+/* factor --> proportion of a cell's value that will get diffused 
+0.8 < factor --> weird behavior */
 void diffuseMap(Map **mapPtr, float factor) {
     Map *tempMap;
 
     Map *map = *mapPtr;
 
     mallocMap(&tempMap, map->height, map->width);
+
+    clearMap(tempMap);
 
     for (int i = 0; i < map->height; ++i) {
         for (int j = 0; j < map->width; ++j) {
@@ -101,11 +111,40 @@ void diffuseMap(Map **mapPtr, float factor) {
     return;
 }
 
+/* Returns an integer from 0 to 255 */
+int randomHash(int in) {
+    return ((((in*in)^(in+150))*13-2)^in)%256;
+}
+
+/* Hash from 0 to max */
+int hashInRange(int max, int in) {
+    int maxt = max;
+    int out = randomHash(in);
+    while (maxt != 0) {
+        out *= 256;
+        out += randomHash(out^in);
+        maxt /= 256;
+    }
+    return out%max;
+}
+
+void generateTectonics(Map **mapPrt, int count, int seed) {
+    Map *map = *mapPrt;
+    int rngCounter = seed;
+    clearMap(*mapPrt);
+    for (int i = 0; i < count; ++i) {
+        map->map[hashInRange(map->height, rngCounter)][hashInRange(map->height,
+                rngCounter + 1)] = 100;
+        rngCounter += 2;
+    }
+    return;
+}
+
 int main() {
     Map *testMap;
-    mallocMap(&testMap, 10, 10);
+    mallocMap(&testMap, 20, 20);
 
-    testMap->map[3][3] = 100;
+    generateTectonics(&testMap, 5, 73);
 
     renderMap(testMap);
 
