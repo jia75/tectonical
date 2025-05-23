@@ -41,11 +41,14 @@ void renderMap(Map *map) {
 
 void renderToPpm(Map *map) {
     FILE *out = fopen("output.ppm", "w");
-    fprintf(out, "P3\n%d %d\n10\n", map->height, map->width);
+    fprintf(out, "P3\n%d %d\n%d\n", map->width, map->height, colorRange);
     for (int i = 0; i < map->height; ++i) {
         for (int j = 0; j < map->width; ++j) {
-            int val = (int)(map->map[i][j] > 9 ? 9 : map->map[i][j]);
-            fprintf(out, "%d %d %d\n", val, val, val);
+            int val = (int)(map->map[i][j]);
+            val += (val - 1)/7;
+            fprintf(out, "%d %d %d\n", ((val%2)*(val+6)/7)%colorRange, 
+                    ((val/2%2)*(val+6)/7)%colorRange, ((val/4%2)*(val+6)/7)%
+                    colorRange);
         }
     }
     fclose(out);
@@ -111,54 +114,111 @@ void diffuseMap(Map **mapPtr, float factor) {
     return;
 }
 
+int abs(int a) {
+    return a<0?-a:a;
+}
+
 /* Returns an integer from 0 to 255 */
-int randomHash(int in) {
-    return ((((in*in)^(in+150))*13-2)^in)%256;
+int randomHash(int inInt) {
+    int in = inInt;
+    int a = abs(in*100*in+24*in+47)%257;
+    return a%256;
 }
 
 /* Hash from 0 to max */
 int hashInRange(int max, int in) {
-    int maxt = max;
     int out = randomHash(in);
-    while (maxt != 0) {
-        out *= 256;
-        out += randomHash(out^in);
-        maxt /= 256;
+    ++in;
+    while (out < max) {
+        out += randomHash(in+2)*randomHash(in)*randomHash(in+1);
+        in += 3;
     }
-    return out%max;
+    return abs(out)%max;
 }
 
-void generateTectonics(Map **mapPrt, int count, int seed) {
-    Map *map = *mapPrt;
+void generateTectonics(Map **mapPtr, int count, int seed) {
+    Map *map = *mapPtr;
     int rngCounter = seed;
-    clearMap(*mapPrt);
+    clearMap(map);
     for (int i = 0; i < count; ++i) {
         map->map[hashInRange(map->height, rngCounter)][hashInRange(map->height,
-                rngCounter + 1)] = 100;
+                rngCounter + 1)] = i+1;
         rngCounter += 2;
     }
+
+    Map *tempMap;
+    mallocMap(&tempMap, map->height, map->width);
+    clearMap(tempMap);
+
+    int containsEmpty = 1;
+    while (containsEmpty) {
+        containsEmpty = 0;
+        for (int i = 0; i < map->height; ++i) {
+            for (int j = 0; j < map->width; ++j) {
+                if (map->map[i][j] != 0) {
+                    tempMap->map[i][j] = map->map[i][j];
+                    continue;
+                }
+                int neighbors = ((i>0&&map->map[i-1][j]!=0)*8)|((j>0&&
+                        map->map[i][j-1]!=0)*4)|((i+1<map->height&&
+                        map->map[i+1][j]!=0)*2)|(j+1<map->width&
+                        map->map[i][j+1]!=0);
+                int neighborCount = (i>0&&map->map[i-1][j]!=0)+(j>0&&
+                        map->map[i][j-1]!=0)+(i+1<map->height&&
+                        map->map[i+1][j]!=0)+(j+1<map->width&
+                        map->map[i][j+1]!=0);
+                if (neighborCount == 0) {
+                    containsEmpty = 1;
+                    continue;
+                }
+                int randomNeighborChoice = 0;
+                while (!(neighbors&randomNeighborChoice)) {
+                    randomNeighborChoice = 1<<hashInRange(4, rngCounter);
+                    ++rngCounter;
+                }
+                if ((neighbors&randomNeighborChoice) == 1) {
+                    tempMap->map[i][j] = map->map[i][j+1];
+                }
+                if ((neighbors&randomNeighborChoice) == 2) {
+                    tempMap->map[i][j] = map->map[i+1][j];
+                }
+                if ((neighbors&randomNeighborChoice) == 4) {
+                    tempMap->map[i][j] = map->map[i][j-1];
+                }  
+                if ((neighbors&randomNeighborChoice) == 8) {
+                    tempMap->map[i][j] = map->map[i-1][j];
+                }
+            }
+        }
+        Map *switchMap = tempMap;
+        tempMap = map;
+        map = switchMap;
+    }
+    freeMap(tempMap);
+    *mapPtr = map;
     return;
 }
 
 int main() {
     Map *testMap;
-    mallocMap(&testMap, 20, 20);
+    mallocMap(&testMap, 1000, 1000);
 
-    generateTectonics(&testMap, 5, 73);
+    generateTectonics(&testMap, 100, 75);
 
-    renderMap(testMap);
+    // renderMap(testMap);
+    // (9-1)/7 + 1
 
     char c;
 
     while (c != 'x') {
         while ((c = getc(stdin)) == '\n');
-        diffuseMap(&testMap, 0.5);
+        // diffuseMap(&testMap, 0.5);
         renderMap(testMap);
         if (c == 'd') {
             showMapValues(testMap);
         }
         if (c == 'p') {
-            renderToPpm(testMap);
+            renderToPpm(testMap, 15);
         }
     }
 
