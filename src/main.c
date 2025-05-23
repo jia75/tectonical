@@ -1,31 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef struct {
-    float **map;
-    int height;
-    int width;
-} Map;
-
-void freeMap(Map *map) {
-    for (int i = 0; i< map->height; ++i) {
-        free(map->map[i]);
-    }
-    free(map->map);
-    free(map);
-    return;
-}
-
-void mallocMap(Map **mapPtr, int height, int width) {
-    *mapPtr = malloc(sizeof(Map));
-    (*mapPtr)->height = height;
-    (*mapPtr)->width = width;
-    (*mapPtr)->map = malloc(height * sizeof(int*));
-    for (int i = 0; i < height; ++i) {
-        (*mapPtr)->map[i] = malloc(width * sizeof(int));
-    }
-    return;
-}
+#include "map.h"
+#include "hash.h"
 
 char density[10] =  {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
 
@@ -39,7 +16,7 @@ void renderMap(Map *map) {
     }
 }
 
-void renderToPpm(Map *map) {
+void renderToPpm(Map *map, int colorRange) {
     FILE *out = fopen("output.ppm", "w");
     fprintf(out, "P3\n%d %d\n%d\n", map->width, map->height, colorRange);
     for (int i = 0; i < map->height; ++i) {
@@ -52,14 +29,6 @@ void renderToPpm(Map *map) {
         }
     }
     fclose(out);
-}
-
-void clearMap(Map *map) {
-    for (int i = 0; i < map->height; ++i) {
-        for (int j = 0; j < map->width; ++j) {
-            map->map[i][j] = 0;
-        }
-    }
 }
 
 void showMapValues(Map *map) {
@@ -112,28 +81,6 @@ void diffuseMap(Map **mapPtr, float factor) {
     (*mapPtr) = tempMap;
     
     return;
-}
-
-int abs(int a) {
-    return a<0?-a:a;
-}
-
-/* Returns an integer from 0 to 255 */
-int randomHash(int inInt) {
-    int in = inInt;
-    int a = abs(in*100*in+24*in+47)%257;
-    return a%256;
-}
-
-/* Hash from 0 to max */
-int hashInRange(int max, int in) {
-    int out = randomHash(in);
-    ++in;
-    while (out < max) {
-        out += randomHash(in+2)*randomHash(in)*randomHash(in+1);
-        in += 3;
-    }
-    return abs(out)%max;
 }
 
 void generateTectonics(Map **mapPtr, int count, int seed) {
