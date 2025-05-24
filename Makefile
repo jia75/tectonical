@@ -1,4 +1,4 @@
-OBJ = obj/main.o obj/map.o obj/hash.o
+OBJ = obj/main.o obj/map.o obj/hash.o obj/map-render.o obj/tectonics.o
 BINDIR = bin/
 OBJDIR = obj/
 
@@ -7,16 +7,23 @@ all: bin/out
 	mkdir -p obj
 
 bin/out: $(OBJ) | $(BINDIR) $(OBJDIR)
-	$(CC) $(CFLAGS) -o bin/out $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ)
 
 obj/main.o: src/main.c src/map.h src/hash.h | $(OBJDIR)
-	$(CC) $(CFLAGS) -c -o obj/main.o src/main.c
+	$(CC) $(CFLAGS) -c -o $@ src/main.c
 
 obj/map.o: src/map.c src/map.h | $(OBJDIR)
-	$(CC) $(CFLAGS) -c -o obj/map.o src/map.c
+	$(CC) $(CFLAGS) -c -o $@ src/map.c
+
+obj/map-render.o: src/map-render.c src/map.h | $(OBJDIR)
+	$(CC) $(CFLAGS) -c -o $@ src/map-render.c
 
 obj/hash.o: src/hash.c src/hash.h | $(OBJDIR)
-	$(CC) $(CFLAGS) -c -o obj/hash.o src/hash.c
+	$(CC) $(CFLAGS) -c -o $@ src/hash.c
+
+obj/tectonics.o: src/tectonics.c src/tectonics.h src/hash.h src/map.h | \
+$(OBJDIR)
+	$(CC) $(CFLAGS) -c -o $@ src/tectonics.c
 
 $(BINDIR) $(OBJDIR):
 	mkdir -p $@
