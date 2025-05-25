@@ -1,9 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
-
 #include <stdio.h>
-
-#include "tectonics.h"
+#include "generator.h"
 
 /* factor --> proportion of a cell's value that will get diffused 
 0.8 < factor --> weird behavior */
@@ -57,8 +55,8 @@ void generateTectonicVectors(TectonicVector ***vecsPtr, int count, int seed) {
         vecs[i] = malloc(sizeof(TectonicVector));
         vecs[i]->isLand = (hashInRange(1000, rngCounter) < (int)(LAND_RATE*
                 1000));
-        vecs[i]->x = ((float)hashInRange(1000, rngCounter+1))/1000;
-        vecs[i]->y = ((float)hashInRange(1000, rngCounter+2))/1000;
+        vecs[i]->x = ((float)hashInRange(1000, rngCounter+1)-500)/1000;
+        vecs[i]->y = ((float)hashInRange(1000, rngCounter+2)-500)/1000;
         rngCounter += 3;
     }
 }
@@ -91,7 +89,7 @@ void generateTectonics(Map **mapPtr, int count, int seed) {
                     tempMap->map[i][j] = map->map[i][j];
                     continue;
                 }
-                if (randomHash(rngCounter) >= TECTONIC_VOLATILITY) {
+                if (randomHash(rngCounter) < TECTONIC_VOLATILITY) {
                     ++rngCounter;
                     continue;
                 }
@@ -136,6 +134,11 @@ void generateTectonics(Map **mapPtr, int count, int seed) {
     return;
 }
 
+static void printVector(TectonicVector *vector) {
+    fprintf(stdout, "ℹ Vector: (%f, %f)\n", vector->x, vector->y);
+    return;
+}
+
 void generateHeightmap(Map *tectonicMap, TectonicVector **tectonicVecs, 
         Map **heightMapPtr, int seed) {
     Map *map = *heightMapPtr;
@@ -159,7 +162,7 @@ void generateHeightmap(Map *tectonicMap, TectonicVector **tectonicVecs,
                 /* fprintf(stdout, "ℹ Direction %d\n",
                     direction); */
                 for (int k = 1; k < TECTONIC_IMPACT_MAX_RANGE; ++k) {
-                    int targetI = i+((direction+1)%2)*(-1)*(direction%3-1)*k;
+                    int targetI = i+((direction+1)%2)*(direction%3-1)*k;
                     int targetJ = j+((direction)%2)*(-1)*((direction-1)%3-1)*k;
                     if (targetI < 0 || targetI >= map->height || targetJ < 0 ||
                             targetJ >= map->width) {
@@ -169,17 +172,24 @@ void generateHeightmap(Map *tectonicMap, TectonicVector **tectonicVecs,
                     if (targetPlate == ownPlate) {
                         continue;
                     }
+
                     /* fprintf(stdout, "ℹ Target Plate %d\n", targetPlate); */
                     calibratedTarget->x = tectonicVecs[targetPlate]->x - 
                             tectonicVecs[ownPlate]->x;
                     calibratedTarget->y = tectonicVecs[targetPlate]->y - 
                             tectonicVecs[ownPlate]->y;
+
+                    /* if (i == 412 && j == 552) {
+                        printVector(tectonicVecs[targetPlate]);
+                        printVector(tectonicVecs[ownPlate]);
+                        printVector(calibratedTarget);
+                    } */
                     /* fprintf(stdout, "╠ Changing; gradient is %f\n",
                             calibratedTarget->y/calibratedTarget->x); */
                     float angle = atan(calibratedTarget->y/
                             calibratedTarget->x);
                     map->map[i][j] += TECTONIC_IMPACT_FACTOR*(direction/2-1)*
-                            sin(angle + (direction%2)*M_PI/2)/pow(k, 
+                            sin(angle + ((direction)%2)*M_PI/2)/pow(k, 
                             TECTONIC_IMPACT_DIMINISHING_FACTOR);
                 }
             }

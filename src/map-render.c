@@ -56,9 +56,23 @@ void renderToRealistic(Map *map, int colorRange, int seaLevel) {
             if (val < seaLevel) {
                 fprintf(out, "0 0 %d\n", val + colorRange/2);
             } else {
-                fprintf(out, "%d %d 0\n", (val-seaLevel)*10, val + colorRange/2);
+                fprintf(out, "%d %d %d\n", (val-seaLevel)*10, val + 
+                        colorRange/2, (val-seaLevel)*10);
             }
 
+        }
+    }
+    fclose(out);
+}
+
+void renderTectonicVectors(Map *map, TectonicVector **vecs) {
+    FILE *out = fopen("output-vecs.ppm", "w");
+    fprintf(out, "P3\n%d %d\n256\n", map->width, map->height);
+    for (int i = 0; i < map->height; ++i) {
+        for (int j = 0; j < map->width; ++j) {
+            int plate = (int)(map->map[i][j]);
+            fprintf(out, "%d %d %d\n", (int)(vecs[plate]->x*255),
+                    (int)(vecs[plate]->y*255), vecs[plate]->isLand*255);
         }
     }
     fclose(out);

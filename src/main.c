@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "map.h"
-#include "tectonics.h"
+#include "generator.h"
 
 int main() {
     fprintf(stdout, "Tectonical version 1.0.0, Copyright (C) 2025 D. Hargitt\n\
@@ -15,9 +15,10 @@ conditions.\n");
     Map *testMap;
     mallocMap(&testMap, 1000, 1000);
 
+    int seed = 75;
 
     int tectonicCount = 50;
-    generateTectonics(&testMap, tectonicCount, 75);
+    generateTectonics(&testMap, tectonicCount, seed);
 
     fprintf(stdout, "✔ Tectonics Generated\n");
 
@@ -26,11 +27,24 @@ conditions.\n");
 
     TectonicVector **tectonicVecs;
 
-    generateTectonicVectors(&tectonicVecs, tectonicCount, 75);
+    generateTectonicVectors(&tectonicVecs, tectonicCount, seed);
 
     fprintf(stdout, "✔ Vectors Generated\n");
 
-    generateHeightmap(testMap, tectonicVecs, &heightMap, 75);
+    /* 552 412 
+    550 402 */
+
+    fprintf(stdout, "ℹ Notice: Info on (552, 412). v = (%f, %f); p = %d\n",
+            tectonicVecs[(int)testMap->map[412][552]]->x, 
+            tectonicVecs[(int)testMap->map[412][552]]->y,
+            (int)testMap->map[412][552]);
+
+    fprintf(stdout, "ℹ Notice: Info on (550, 402). v = (%f, %f); p = %d\n",
+            tectonicVecs[(int)testMap->map[402][550]]->x, 
+            tectonicVecs[(int)testMap->map[402][550]]->y,
+            (int)testMap->map[402][550]);
+
+    generateHeightmap(testMap, tectonicVecs, &heightMap, seed);
 
     fprintf(stdout, "✔ Heightmap Generated\n");
 
@@ -39,10 +53,20 @@ conditions.\n");
     renderToPpmBw(heightMap, 100);
     renderToRealistic(heightMap, 100, 25);
     renderToPpm(testMap, colorRange);
+    renderTectonicVectors(testMap, tectonicVecs);
     
-    free(tectonicVecs); /* This doesn't recursively do its job */
+    int a = 0, b = 0;
+    while (1) {
+        fscanf(stdin, "%d %d", &a, &b);
+        fprintf(stdout, "ℹ Notice: Info on (%d, %d). v = (%f, %f); p = %d\n",
+            a, b, tectonicVecs[(int)testMap->map[a][b]]->x, 
+            tectonicVecs[(int)testMap->map[a][b]]->y, (int)testMap->map[a][b]);
+    }
+
+    free(tectonicVecs); /* Note: this doesn't recursively do its job */
     freeMap(testMap);
     freeMap(heightMap);
+
     return 0;
 
     char c;

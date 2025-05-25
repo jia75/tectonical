@@ -1,3 +1,5 @@
+#include "tectonics.h"
+
 #ifndef TECTONICAL_MAP_H
 #define TECTONICAL_MAP_H
 
@@ -26,5 +28,7 @@ extern void showMapValues(Map *map);
 extern void renderToPpmBw(Map *map, int colorRange);
 
 extern void renderToRealistic(Map *map, int colorRange, int seaLevel);
+
+extern void renderTectonicVectors(Map *map, TectonicVector **vecs);
 
 #endif /* TECTONIC_MAP_H */
