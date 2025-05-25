@@ -10,13 +10,13 @@ Tectonical comes with ABSOLUTELY NO WARRANTY; for details view LICENSE.md. This\
 \nis free software, and you are welcome to redistribute it under certain \n\
 conditions.\n");
 
-    fprintf(stdout, "ℹ Starting Generation\n");
+    fprintf(stdout, "❯ Starting Generation\n");
 
     Map *testMap;
-    int x = 4096, y = 4096;
-    mallocMap(&testMap, x, y);
+    int xSize = 1000, ySize = 1000;
+    mallocMap(&testMap, xSize, ySize);
 
-    int seed = 75;
+    int seed = 69;
 
     int tectonicCount = 50;
     generateTectonics(&testMap, tectonicCount, seed);
@@ -24,26 +24,13 @@ conditions.\n");
     fprintf(stdout, "✔ Tectonics Generated\n");
 
     Map *heightMap;
-    mallocMap(&heightMap, x, y);
+    mallocMap(&heightMap, xSize, ySize);
 
     TectonicVector **tectonicVecs;
 
     generateTectonicVectors(&tectonicVecs, tectonicCount, seed);
 
     fprintf(stdout, "✔ Vectors Generated\n");
-
-    /* 552 412 
-    550 402 */
-
-    fprintf(stdout, "ℹ Notice: Info on (552, 412). v = (%f, %f); p = %d\n",
-            tectonicVecs[(int)testMap->map[412][552]]->x, 
-            tectonicVecs[(int)testMap->map[412][552]]->y,
-            (int)testMap->map[412][552]);
-
-    fprintf(stdout, "ℹ Notice: Info on (550, 402). v = (%f, %f); p = %d\n",
-            tectonicVecs[(int)testMap->map[402][550]]->x, 
-            tectonicVecs[(int)testMap->map[402][550]]->y,
-            (int)testMap->map[402][550]);
 
     generateHeightmap(testMap, tectonicVecs, &heightMap, seed);
 
@@ -55,35 +42,10 @@ conditions.\n");
     renderToRealistic(heightMap, 100, 45);
     renderToPpm(testMap, colorRange);
     renderTectonicVectors(testMap, tectonicVecs);
-    
-    int a = 0, b = 0;
-    while (1) {
-        fscanf(stdin, "%d %d", &a, &b);
-        fprintf(stdout, "ℹ Notice: Info on (%d, %d). v = (%f, %f); p = %d\n",
-            a, b, tectonicVecs[(int)testMap->map[a][b]]->x, 
-            tectonicVecs[(int)testMap->map[a][b]]->y, (int)testMap->map[a][b]);
-    }
 
     free(tectonicVecs); /* Note: this doesn't recursively do its job */
     freeMap(testMap);
     freeMap(heightMap);
 
-    return 0;
-
-    char c;
-
-    while (c != 'x') {
-        while ((c = getc(stdin)) == '\n');
-        // diffuseMap(&testMap, 0.5);
-        renderMap(testMap);
-        if (c == 'd') {
-            showMapValues(testMap);
-        }
-        if (c == 'p') {
-            renderToPpm(testMap, colorRange);
-        }
-    }
-
-    freeMap(testMap);
     return 0;
 }
