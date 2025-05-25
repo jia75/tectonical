@@ -3,8 +3,6 @@ BINDIR = bin/
 OBJDIR = obj/
 
 all: bin/out
-	mkdir -p bin
-	mkdir -p obj
 
 bin/out: $(OBJ) | $(BINDIR) $(OBJDIR)
 	$(CC) $(CFLAGS) -o $@ $(OBJ)

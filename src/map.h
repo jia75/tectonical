@@ -1,3 +1,6 @@
+#ifndef TECTONICAL_MAP_H
+#define TECTONICAL_MAP_H
+
 typedef struct {
     float **map;
     int height;
@@ -19,3 +22,9 @@ extern void renderMap(Map *map);
 extern void renderToPpm(Map *map, int colorRange);
 
 extern void showMapValues(Map *map);
+
+extern void renderToPpmBw(Map *map, int colorRange);
+
+extern void renderToRealistic(Map *map, int colorRange, int seaLevel);
+
+#endif /* TECTONIC_MAP_H */

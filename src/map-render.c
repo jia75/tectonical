@@ -29,6 +29,41 @@ void renderToPpm(Map *map, int colorRange) {
     fclose(out);
 }
 
+static int max(int a, int b) {
+    return a>b?a:b;
+}
+
+void renderToPpmBw(Map *map, int colorRange) {
+    FILE *out = fopen("output-bw.ppm", "w");
+    fprintf(out, "P3\n%d %d\n%d\n", map->width, map->height, colorRange);
+    for (int i = 0; i < map->height; ++i) {
+        for (int j = 0; j < map->width; ++j) {
+            int val = (int)(map->map[i][j]);
+            val = max(val, 0);
+            fprintf(out, "%d %d %d\n", val, val, val);
+        }
+    }
+    fclose(out);
+}
+
+void renderToRealistic(Map *map, int colorRange, int seaLevel) {
+    FILE *out = fopen("output-real.ppm", "w");
+    fprintf(out, "P3\n%d %d\n%d\n", map->width, map->height, colorRange);
+    for (int i = 0; i < map->height; ++i) {
+        for (int j = 0; j < map->width; ++j) {
+            int val = (int)(map->map[i][j]);
+            val = max(val, 0);
+            if (val < seaLevel) {
+                fprintf(out, "0 0 %d\n", val + colorRange/2);
+            } else {
+                fprintf(out, "%d %d 0\n", (val-seaLevel)*10, val + colorRange/2);
+            }
+
+        }
+    }
+    fclose(out);
+}
+
 void showMapValues(Map *map) {
     for (int i = 0; i < map->height; ++i) {
         for (int j = 0; j < map->width; ++j) {
