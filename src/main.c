@@ -13,7 +13,8 @@ conditions.\n");
     fprintf(stdout, "ℹ Starting Generation\n");
 
     Map *testMap;
-    mallocMap(&testMap, 1000, 1000);
+    int x = 4096, y = 4096;
+    mallocMap(&testMap, x, y);
 
     int seed = 75;
 
@@ -23,7 +24,7 @@ conditions.\n");
     fprintf(stdout, "✔ Tectonics Generated\n");
 
     Map *heightMap;
-    mallocMap(&heightMap, 1000, 1000);
+    mallocMap(&heightMap, x, y);
 
     TectonicVector **tectonicVecs;
 
@@ -51,7 +52,7 @@ conditions.\n");
     int colorRange = (tectonicCount-1)/7 + 1;
 
     renderToPpmBw(heightMap, 100);
-    renderToRealistic(heightMap, 100, 25);
+    renderToRealistic(heightMap, 100, 45);
     renderToPpm(testMap, colorRange);
     renderTectonicVectors(testMap, tectonicVecs);
     

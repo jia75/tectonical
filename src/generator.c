@@ -66,12 +66,12 @@ void generateTectonics(Map **mapPtr, int count, int seed) {
     int rngCounter = seed;
     clearMap(map);
     for (int i = 0; i < count; ++i) {
-        if (map->map[hashInRange(map->height, rngCounter)][hashInRange(map->height,
-                rngCounter + 1)]) {
+        if (map->map[hashInRange(map->height, rngCounter)]
+                [hashInRange(map->width, rngCounter + 1)]) {
             ++rngCounter;
             continue;
         }
-        map->map[hashInRange(map->height, rngCounter)][hashInRange(map->height,
+        map->map[hashInRange(map->height, rngCounter)][hashInRange(map->width,
                 rngCounter + 1)] = i;
         rngCounter += 2;
     }
@@ -96,11 +96,11 @@ void generateTectonics(Map **mapPtr, int count, int seed) {
                 ++rngCounter;
                 int neighbors = ((i>0&&map->map[i-1][j]!=0)*8)|((j>0&&
                         map->map[i][j-1]!=0)*4)|((i+1<map->height&&
-                        map->map[i+1][j]!=0)*2)|(j+1<map->width&
+                        map->map[i+1][j]!=0)*2)|(j+1<map->width&&
                         map->map[i][j+1]!=0);
                 int neighborCount = (i>0&&map->map[i-1][j]!=0)+(j>0&&
                         map->map[i][j-1]!=0)+(i+1<map->height&&
-                        map->map[i+1][j]!=0)+(j+1<map->width&
+                        map->map[i+1][j]!=0)+(j+1<map->width&&
                         map->map[i][j+1]!=0);
                 if (neighborCount == 0) {
                     containsEmpty = 1;
@@ -179,16 +179,9 @@ void generateHeightmap(Map *tectonicMap, TectonicVector **tectonicVecs,
                     calibratedTarget->y = tectonicVecs[targetPlate]->y - 
                             tectonicVecs[ownPlate]->y;
 
-                    /* if (i == 412 && j == 552) {
-                        printVector(tectonicVecs[targetPlate]);
-                        printVector(tectonicVecs[ownPlate]);
-                        printVector(calibratedTarget);
-                    } */
-                    /* fprintf(stdout, "╠ Changing; gradient is %f\n",
-                            calibratedTarget->y/calibratedTarget->x); */
-                    float angle = atan(calibratedTarget->y/
+                    float angle = atan2(calibratedTarget->y, 
                             calibratedTarget->x);
-                    map->map[i][j] += TECTONIC_IMPACT_FACTOR*(direction/2-1)*
+                    map->map[i][j] += TECTONIC_IMPACT_FACTOR*(direction/2*2-1)*
                             sin(angle + ((direction)%2)*M_PI/2)/pow(k, 
                             TECTONIC_IMPACT_DIMINISHING_FACTOR);
                 }
