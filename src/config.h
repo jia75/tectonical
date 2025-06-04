@@ -12,7 +12,7 @@ typedef struct {
     float seaPlateHeight;
     float landPlateHeight;
     float tectonicImpactFactor;
-    float seaLevel;
+    int seaLevel;
     int gaussianRange;
     float gaussianDiminishingFactor;
     int tectonicCount;

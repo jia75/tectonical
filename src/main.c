@@ -81,9 +81,12 @@ generated with some default values\n");
     renderToRealistic(heightMap, 100, conf->seaLevel);
     renderToRealisticBands(heightMap, conf->seaLevel);
     renderToPpm(testMap, colorRange);
-    renderTectonicVectors(testMap, tectonicVecs);
 
-    free(tectonicVecs); /* Note: this doesn't recursively do its job */
+    for (int i = 0; i < tectonicCount; ++i) {
+        free(tectonicVecs[i]);
+    }
+    free(tectonicVecs);
+    
     freeMap(testMap);
     freeMap(heightMap);
 

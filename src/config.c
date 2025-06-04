@@ -32,7 +32,7 @@ void setupConfig(Config **confPtr) {
     fscanf(fptr, "seed=%d\nwidth=%d\nheight=%d\nland-rate=%f\ntectonic-volatil\
 ity=%d\ntectonic-impact-max-range=%d\ntectonic-impact-diminishing-factor=%f\n\
 sea-plate-height=%f\nland-plate-height=%f\ntectonic-impact-factor=%f\nsea-lev\
-el=%f\ngaussian-range=%d\ngaussian-diminishing-factor=%f\ntectonic-count=%d\n",
+el=%d\ngaussian-range=%d\ngaussian-diminishing-factor=%f\ntectonic-count=%d\n",
             &conf->seed, &conf->width, &conf->height, &conf->landRate, &conf->
             tectonicVolatility, &conf->tectonicImpactMaxRange, &conf->
             tectonicImpactDiminishingFactor, &conf->seaPlateHeight, &conf->

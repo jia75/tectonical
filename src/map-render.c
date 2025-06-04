@@ -96,9 +96,11 @@ void renderToRealisticBands(Map *map, int seaLevel) {
             val = max(val, 0);
             if (val < seaLevel) {
                 fprintf(out, "0 0 %d\n", (4 + 6*val/seaLevel)%11);
-            } else if (val < seaLevel + 5) {
+            } else if (val < seaLevel + 1) {
                 fprintf(out, "9 9 0\n");
-            } else if (val < seaLevel + 15) {
+            } else if (val < seaLevel + 6) {
+                fprintf(out, "0 10 0\n");
+            } else if (val < seaLevel + 16) {
                 fprintf(out, "0 9 0\n");
             } else if (val < seaLevel + 25) {
                 fprintf(out, "9 9 9\n");
