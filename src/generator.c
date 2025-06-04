@@ -46,22 +46,23 @@ void diffuseMap(Map **mapPtr, float factor) {
     return;
 }
 
-void generateTectonicVectors(TectonicVector ***vecsPtr, int count, int seed) {
+void generateTectonicVectors(TectonicVector ***vecsPtr, int count, int seed,
+        Config *conf) {
     /* To avoid accidental alignments */
     int rngCounter = seed + randomHash(seed);
     *vecsPtr = malloc(count * sizeof(TectonicVector *));
     TectonicVector **vecs = *vecsPtr;
     for (int i = 0; i < count; ++i) {
         vecs[i] = malloc(sizeof(TectonicVector));
-        vecs[i]->isLand = (hashInRange(1000, rngCounter) < (int)(LAND_RATE*
-                1000));
+        vecs[i]->isLand = (hashInRange(1000, rngCounter) < (int)(conf->landRate
+                *1000));
         vecs[i]->x = ((float)hashInRange(1000, rngCounter+1)-500)/1000;
         vecs[i]->y = ((float)hashInRange(1000, rngCounter+2)-500)/1000;
         rngCounter += 3;
     }
 }
 
-void generateTectonics(Map **mapPtr, int count, int seed) {
+void generateTectonics(Map **mapPtr, int count, int seed, Config *conf) {
     Map *map = *mapPtr;
     int rngCounter = seed;
     clearMap(map);
@@ -89,7 +90,7 @@ void generateTectonics(Map **mapPtr, int count, int seed) {
                     tempMap->map[i][j] = map->map[i][j];
                     continue;
                 }
-                if (randomHash(rngCounter) < TECTONIC_VOLATILITY) {
+                if (randomHash(rngCounter) < conf->tectonicVolatility) {
                     ++rngCounter;
                     continue;
                 }
@@ -140,7 +141,7 @@ static void printVector(TectonicVector *vector) {
 }
 
 void generateHeightmap(Map *tectonicMap, TectonicVector **tectonicVecs, 
-        Map **heightMapPtr, int seed) {
+        Map **heightMapPtr, int seed, Config *conf) {
     Map *map = *heightMapPtr;
     clearMap(map);
 
@@ -155,13 +156,14 @@ void generateHeightmap(Map *tectonicMap, TectonicVector **tectonicVecs,
         }
         for (int j = 0; j < map->width; ++j) {
             int ownPlate = (int)tectonicMap->map[i][j];
-            map->map[i][j] = tectonicVecs[ownPlate]->isLand*LAND_PLATE_HEIGHT;
+            map->map[i][j] = tectonicVecs[ownPlate]->isLand?conf->
+                    landPlateHeight:conf->seaPlateHeight;
             /* fprintf(stdout, "ℹ Starting pixel %d %d; value is %f\n",
                     i, j, map->map[i][j]); */
             for (int direction = 0; direction < 4; ++direction) {
                 /* fprintf(stdout, "ℹ Direction %d\n",
                     direction); */
-                for (int k = 1; k < TECTONIC_IMPACT_MAX_RANGE; ++k) {
+                for (int k = 1; k < conf->tectonicImpactMaxRange; ++k) {
                     int targetI = i+((direction+1)%2)*(direction%3-1)*k;
                     int targetJ = j+((direction)%2)*(-1)*((direction-1)%3-1)*k;
                     if (targetI < 0 || targetI >= map->height || targetJ < 0 ||
@@ -181,9 +183,9 @@ void generateHeightmap(Map *tectonicMap, TectonicVector **tectonicVecs,
 
                     float angle = atan2(calibratedTarget->y, 
                             calibratedTarget->x);
-                    map->map[i][j] += TECTONIC_IMPACT_FACTOR*(direction/2*2-1)*
-                            sin(angle + ((direction)%2)*M_PI/2)/pow(k, 
-                            TECTONIC_IMPACT_DIMINISHING_FACTOR);
+                    map->map[i][j] += conf->tectonicImpactFactor*(direction/2*
+                            2-1)*sin(angle + ((direction)%2)*M_PI/2)/pow(k, 
+                            conf->tectonicImpactDiminishingFactor);
                 }
             }
         }
@@ -191,4 +193,63 @@ void generateHeightmap(Map *tectonicMap, TectonicVector **tectonicVecs,
     fprintf(stdout, "╚ Heightmap Generation: 100%%\n");
 
     free(calibratedTarget);
+}
+
+/* intensity -1 is basic for now */
+void gaussianBlur(Map **mapPtr, float intensity, Config *conf) {
+    Map *tempMap;
+
+    Map *map = *mapPtr;
+
+    mallocMap(&tempMap, map->height, map->width);
+
+    clearMap(tempMap);
+
+    for (int i = 0; i < map->height; ++i) {
+        for (int j = 0; j < map->width; ++j) {
+            float sum = map->map[i][j];
+            float count = 1;
+            for (int k = 1; k < conf->gaussianRange; ++k) {
+                if (j+k < map->width) {
+                    sum += map->map[i][j+k] * pow((float)k, intensity);
+                    count += (pow((float)k, intensity));
+                }
+                if (j-k >= 0) {
+                    sum += map->map[i][j-k] * pow((float)k, intensity);
+                    count += (pow((float)k, intensity));
+                }
+            }
+            tempMap->map[i][j] = sum/count;
+        }
+    }
+
+    Map *swapMap;
+    swapMap = tempMap;
+    tempMap = map;
+    map = swapMap;
+
+    clearMap(tempMap);
+
+    for (int i = 0; i < map->height; ++i) {
+        for (int j = 0; j < map->width; ++j) {
+            float sum = map->map[i][j];
+            float count = 1;
+            for (int k = 1; k < conf->gaussianRange; ++k) {
+                if (i+k < map->height) {
+                    sum += map->map[i+k][j] * pow((float)k, intensity);
+                    count += (pow((float)k, intensity));
+                }
+                if (i-k >= 0) {
+                    sum += map->map[i-k][j] * pow((float)k, intensity);
+                    count += (pow((float)k, intensity));
+                }
+            }
+            tempMap->map[i][j] = sum/count;
+        }
+    }
+
+    freeMap(map);
+    (*mapPtr) = tempMap;
+    
+    return;
 }

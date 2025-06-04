@@ -86,3 +86,27 @@ void showMapValues(Map *map) {
         fprintf(stdout, "\n");
     }
 }
+
+void renderToRealisticBands(Map *map, int seaLevel) {
+    FILE *out = fopen("output-real-bands.ppm", "w");
+    fprintf(out, "P3\n%d %d\n%d\n", map->width, map->height, 10);
+    for (int i = 0; i < map->height; ++i) {
+        for (int j = 0; j < map->width; ++j) {
+            int val = (int)(map->map[i][j]);
+            val = max(val, 0);
+            if (val < seaLevel) {
+                fprintf(out, "0 0 %d\n", (4 + 6*val/seaLevel)%11);
+            } else if (val < seaLevel + 5) {
+                fprintf(out, "9 9 0\n");
+            } else if (val < seaLevel + 15) {
+                fprintf(out, "0 9 0\n");
+            } else if (val < seaLevel + 25) {
+                fprintf(out, "9 9 9\n");
+            } else {
+                fprintf(out, "10 10 10\n");
+            }
+
+        }
+    }
+    fclose(out);
+}

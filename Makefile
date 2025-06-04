@@ -1,4 +1,4 @@
-OBJ = obj/main.o obj/map.o obj/hash.o obj/map-render.o obj/generator.o
+OBJ = obj/main.o obj/map.o obj/hash.o obj/map-render.o obj/generator.o obj/config.o
 BINDIR = bin/
 OBJDIR = obj/
 
@@ -18,6 +18,9 @@ obj/map-render.o: src/map-render.c src/map.h | $(OBJDIR)
 
 obj/hash.o: src/hash.c src/hash.h | $(OBJDIR)
 	$(CC) $(CFLAGS) -c -o $@ src/hash.c
+
+obj/config.o: src/config.c src/config.h | $(OBJDIR)
+	$(CC) $(CFLAGS) -c -o $@ src/config.c
 
 obj/generator.o: src/generator.c src/generator.h src/tectonics.h src/hash.h \
 src/map.h | $(OBJDIR)
