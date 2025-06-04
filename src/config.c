@@ -12,7 +12,7 @@ void checkConfig() {
             "seed=100\nwidth=256\nheight=256\nland-rate=0.3\ntectonic-volatili\
 ty=128\ntectonic-impact-max-range=50\ntectonic-impact-diminishing-factor=0.4\n\
 sea-plate-height=10\nland-plate-height=20\ntectonic-impact-factor=1.5\nsea-lev\
-el=19\ngaussian-range=85\ngaussian-diminishing-factor=-2\ntectonic-count=10\n"
+el=20\ngaussian-range=85\ngaussian-diminishing-factor=-2\ntectonic-count=11\n"
         );
     }
     fclose(fptr);
