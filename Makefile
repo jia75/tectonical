@@ -5,7 +5,7 @@ OBJDIR = obj/
 all: bin/out
 
 bin/out: $(OBJ) | $(BINDIR) $(OBJDIR)
-	$(CC) $(CFLAGS) -o $@ $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) -lm
 
 obj/main.o: src/main.c src/map.h src/hash.h | $(OBJDIR)
 	$(CC) $(CFLAGS) -c -o $@ src/main.c
