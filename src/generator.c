@@ -90,6 +90,7 @@ void generateTectonics(Map **mapPtr, int count, int seed, Config *conf) {
                     tempMap->map[i][j] = map->map[i][j];
                     continue;
                 }
+                containsEmpty = 1;
                 if (randomHash(rngCounter) < conf->tectonicVolatility) {
                     ++rngCounter;
                     continue;
@@ -104,7 +105,6 @@ void generateTectonics(Map **mapPtr, int count, int seed, Config *conf) {
                         map->map[i+1][j]!=0)+(j+1<map->width&&
                         map->map[i][j+1]!=0);
                 if (neighborCount == 0) {
-                    containsEmpty = 1;
                     continue;
                 }
                 int randomNeighborChoice = 0;

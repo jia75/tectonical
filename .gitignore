@@ -1,4 +1,5 @@
 bin/
 obj/
 etc/
-output.ppm
+output*
+.tectonical.config
