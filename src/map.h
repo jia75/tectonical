@@ -33,4 +33,7 @@ extern void renderTectonicVectors(Map *map, TectonicVector **vecs);
 
 extern void renderToRealisticBands(Map *map, int seaLevel);
 
+extern void renderToRealisticBandsWithShadows(Map *map, int seaLevel, float 
+        sun);
+
 #endif /* TECTONICAL_MAP_H */

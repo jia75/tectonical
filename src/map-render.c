@@ -112,3 +112,54 @@ void renderToRealisticBands(Map *map, int seaLevel) {
     }
     fclose(out);
 }
+
+void renderToRealisticBandsWithShadows(Map *map, int seaLevel, float sun) {
+    FILE *out = fopen("output-real-bands-shadow.ppm", "w");
+    fprintf(out, "P3\n%d %d\n%d\n", map->width, map->height, 10);
+    for (int i = 0; i < map->height; ++i) {
+        for (int j = 0; j < map->width; ++j) {
+            int val = (int)(map->map[i][j]);
+            val = max(val, 0);
+            int hasShadow = 0;
+            int k = i + 1, l = j + 1;
+            while (k < map->height && l < map->width) {
+                if (map->map[k][l] > map->map[i][j] + (k-i)*sun) {
+                    hasShadow = 1;
+                    break;
+                }
+                ++k;
+                ++l;
+            }
+            if (hasShadow) {
+                if (val < seaLevel) {
+                    fprintf(out, "0 0 %d\n", (4 + 6*(val-5)/seaLevel)%11);
+                } else if (val < seaLevel + 1) {
+                    fprintf(out, "6 6 0\n");
+                } else if (val < seaLevel + 6) {
+                    fprintf(out, "0 7 0\n");
+                } else if (val < seaLevel + 16) {
+                    fprintf(out, "0 6 0\n");
+                } else if (val < seaLevel + 25) {
+                    fprintf(out, "6 6 6\n");
+                } else {
+                    fprintf(out, "7 7 7\n");
+                }
+            } else {
+                if (val < seaLevel) {
+                    fprintf(out, "0 0 %d\n", (4 + 6*val/seaLevel)%11);
+                } else if (val < seaLevel + 1) {
+                    fprintf(out, "9 9 0\n");
+                } else if (val < seaLevel + 6) {
+                    fprintf(out, "0 10 0\n");
+                } else if (val < seaLevel + 16) {
+                    fprintf(out, "0 9 0\n");
+                } else if (val < seaLevel + 25) {
+                    fprintf(out, "9 9 9\n");
+                } else {
+                    fprintf(out, "10 10 10\n");
+                }
+            }
+        }
+    }
+    fclose(out);
+}
