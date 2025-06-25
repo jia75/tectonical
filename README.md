@@ -1,5 +1,7 @@
 # Tectonical
 
+![Static Badge](https://img.shields.io/badge/License-GPL_2-red)
+
 **Tectonical** is a CLI tool that allows you to generate maps by emulating
 tectonic plates.
 
